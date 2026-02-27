@@ -1,0 +1,148 @@
+version: '3.8'
+
+services:
+  # GitHub MCP Server
+  github-mcp:
+    build:
+      context: ../
+      dockerfile: tools/github-mcp/Dockerfile
+    container_name: xom-github-mcp
+    ports:
+      - "8001:8001"
+      - "9001:9001"
+    environment:
+      - LOG_LEVEL=INFO
+      - SERVER_PORT=8001
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - JWT_SECRET=${JWT_SECRET}
+    volumes:
+      - ./logs/github:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Slack MCP Server
+  slack-mcp:
+    build:
+      context: ../
+      dockerfile: tools/slack-mcp/Dockerfile
+    container_name: xom-slack-mcp
+    ports:
+      - "8002:8002"
+      - "9002:9002"
+    environment:
+      - LOG_LEVEL=INFO
+      - SERVER_PORT=8002
+      - SLACK_BOT_TOKEN=${SLACK_BOT_TOKEN}
+      - SLACK_SIGNING_SECRET=${SLACK_SIGNING_SECRET}
+    volumes:
+      - ./logs/slack:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Database MCP Server
+  database-mcp:
+    build:
+      context: ../
+      dockerfile: tools/database-mcp/Dockerfile
+    container_name: xom-database-mcp
+    ports:
+      - "8003:8003"
+      - "9003:9003"
+    environment:
+      - LOG_LEVEL=INFO
+      - SERVER_PORT=8003
+      - DB_DRIVER=postgresql
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=xomware
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=xomware
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./logs/database:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Xomware API MCP Server
+  xomware-api-mcp:
+    build:
+      context: ../
+      dockerfile: tools/xomware-api-mcp/Dockerfile
+    container_name: xom-xomware-api-mcp
+    ports:
+      - "8004:8004"
+      - "9004:9004"
+    environment:
+      - LOG_LEVEL=INFO
+      - SERVER_PORT=8004
+      - XOMWARE_API_URL=${XOMWARE_API_URL}
+      - XOMWARE_API_KEY=${XOMWARE_API_KEY}
+      - XOMWARE_AUTH_HASH=${XOMWARE_AUTH_HASH}
+    volumes:
+      - ./logs/xomware:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8004/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: xom-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=xomware
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=xomware
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../deployment/init-db.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U xomware"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Prometheus for Metrics
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: xom-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  prometheus_data:
+
+networks:
+  default:
+    name: xom-mcp-network

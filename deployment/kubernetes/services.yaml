@@ -1,0 +1,168 @@
+---
+# GitHub MCP Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: github-mcp
+  namespace: xom-mcp
+  labels:
+    app: github-mcp
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8001
+    targetPort: 8001
+    name: http
+  - port: 9001
+    targetPort: 9001
+    name: metrics
+  selector:
+    app: github-mcp
+---
+# Slack MCP Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: slack-mcp
+  namespace: xom-mcp
+  labels:
+    app: slack-mcp
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8002
+    targetPort: 8002
+    name: http
+  - port: 9002
+    targetPort: 9002
+    name: metrics
+  selector:
+    app: slack-mcp
+---
+# Database MCP Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: database-mcp
+  namespace: xom-mcp
+  labels:
+    app: database-mcp
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8003
+    targetPort: 8003
+    name: http
+  - port: 9003
+    targetPort: 9003
+    name: metrics
+  selector:
+    app: database-mcp
+---
+# Xomware API MCP Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: xomware-api-mcp
+  namespace: xom-mcp
+  labels:
+    app: xomware-api-mcp
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8004
+    targetPort: 8004
+    name: http
+  - port: 9004
+    targetPort: 9004
+    name: metrics
+  selector:
+    app: xomware-api-mcp
+---
+# PostgreSQL Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: xom-mcp
+  labels:
+    app: postgres
+spec:
+  type: ClusterIP
+  ports:
+  - port: 5432
+    targetPort: 5432
+    name: postgres
+  selector:
+    app: postgres
+---
+# Prometheus Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus
+  namespace: xom-mcp
+  labels:
+    app: prometheus
+spec:
+  type: ClusterIP
+  ports:
+  - port: 9090
+    targetPort: 9090
+    name: prometheus
+  selector:
+    app: prometheus
+---
+# Ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mcp-ingress
+  namespace: xom-mcp
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  tls:
+  - hosts:
+    - mcp.xomware.local
+    secretName: mcp-tls
+  rules:
+  - host: mcp.xomware.local
+    http:
+      paths:
+      - path: /github
+        pathType: Prefix
+        backend:
+          service:
+            name: github-mcp
+            port:
+              number: 8001
+      - path: /slack
+        pathType: Prefix
+        backend:
+          service:
+            name: slack-mcp
+            port:
+              number: 8002
+      - path: /database
+        pathType: Prefix
+        backend:
+          service:
+            name: database-mcp
+            port:
+              number: 8003
+      - path: /xomware
+        pathType: Prefix
+        backend:
+          service:
+            name: xomware-api-mcp
+            port:
+              number: 8004
+      - path: /metrics
+        pathType: Prefix
+        backend:
+          service:
+            name: prometheus
+            port:
+              number: 9090

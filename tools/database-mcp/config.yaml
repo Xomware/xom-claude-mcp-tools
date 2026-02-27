@@ -1,0 +1,50 @@
+server:
+  name: database-mcp
+  version: 1.0.0
+  description: "Database MCP Server for queries, updates, and analytics"
+  host: 0.0.0.0
+  port: 8003
+
+database:
+  driver: ${DB_DRIVER:postgresql}
+  host: ${DB_HOST:localhost}
+  port: ${DB_PORT:5432}
+  user: ${DB_USER:postgres}
+  database: ${DB_NAME:xomware}
+  pool_size: 20
+  max_overflow: 40
+  pool_pre_ping: true
+
+authentication:
+  type: api_key
+  token_source: environment
+
+tools:
+  - name: execute_query
+    enabled: true
+    description: "Execute database queries safely"
+    max_rows: 1000
+    
+  - name: update_data
+    enabled: true
+    description: "Update database records"
+    
+  - name: run_analytics
+    enabled: true
+    description: "Run analytics and get insights"
+
+security:
+  allow_select_only: false
+  prevent_bulk_operations: false
+  log_queries: true
+  sanitize_output: true
+
+logging:
+  level: INFO
+  format: json
+  file: logs/database-mcp.log
+
+monitoring:
+  enabled: true
+  prometheus_port: 9003
+  health_check_path: /health

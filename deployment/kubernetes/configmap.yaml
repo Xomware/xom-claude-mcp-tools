@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mcp-config
+  namespace: xom-mcp
+data:
+  LOG_LEVEL: "INFO"
+  DB_DRIVER: "postgresql"
+  DB_HOST: "postgres"
+  DB_PORT: "5432"
+  DB_NAME: "xomware"
+  XOMWARE_API_URL: "https://api.xomware.com"
+  github-mcp.yaml: |
+    server:
+      name: github-mcp
+      port: 8001
+    authentication:
+      type: github_token
+    tools:
+      - name: review_pr
+      - name: create_issue
+      - name: analyze_code
+  slack-mcp.yaml: |
+    server:
+      name: slack-mcp
+      port: 8002
+    authentication:
+      type: slack_bot_token
+    tools:
+      - name: send_message
+      - name: read_thread
+      - name: send_notification
+  database-mcp.yaml: |
+    server:
+      name: database-mcp
+      port: 8003
+    database:
+      driver: postgresql
+    tools:
+      - name: execute_query
+      - name: update_data
+      - name: run_analytics
+  xomware-api-mcp.yaml: |
+    server:
+      name: xomware-api-mcp
+      port: 8004
+    tools:
+      - name: get_board_status
+      - name: move_card
+      - name: get_deployment_status
+      - name: deploy

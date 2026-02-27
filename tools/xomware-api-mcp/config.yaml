@@ -1,0 +1,48 @@
+server:
+  name: xomware-api-mcp
+  version: 1.0.0
+  description: "Xomware API MCP Server for board management, status updates, and deployments"
+  host: 0.0.0.0
+  port: 8004
+
+api:
+  base_url: ${XOMWARE_API_URL:https://api.xomware.com}
+  timeout: 30
+  retry_attempts: 3
+  retry_delay: 1
+
+authentication:
+  type: xomware_auth_hash
+  token_source: environment  # XOMWARE_AUTH_HASH env var
+
+tools:
+  - name: get_board_status
+    enabled: true
+    description: "Get board status and manage cards"
+    
+  - name: move_card
+    enabled: true
+    description: "Move cards between columns"
+    
+  - name: get_deployment_status
+    enabled: true
+    description: "Get deployment status"
+    
+  - name: deploy
+    enabled: true
+    description: "Deploy services to environments"
+
+logging:
+  level: INFO
+  format: json
+  file: logs/xomware-api-mcp.log
+
+monitoring:
+  enabled: true
+  prometheus_port: 9004
+  health_check_path: /health
+
+rate_limiting:
+  enabled: true
+  requests_per_minute: 60
+  burst_size: 10

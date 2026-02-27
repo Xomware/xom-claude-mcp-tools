@@ -1,0 +1,42 @@
+server:
+  name: github-mcp
+  version: 1.0.0
+  description: "GitHub MCP Server for PR review, issue management, and code analysis"
+  host: 0.0.0.0
+  port: 8001
+
+authentication:
+  type: github_token
+  token_source: environment  # GITHUB_TOKEN env var
+  scopes:
+    - repo
+    - read:org
+    - read:user
+
+tools:
+  - name: review_pr
+    enabled: true
+    description: "Review GitHub pull requests"
+    
+  - name: create_issue
+    enabled: true
+    description: "Create and manage GitHub issues"
+    
+  - name: analyze_code
+    enabled: true
+    description: "Analyze code in repositories"
+
+logging:
+  level: INFO
+  format: json
+  file: logs/github-mcp.log
+
+monitoring:
+  enabled: true
+  prometheus_port: 9001
+  health_check_path: /health
+
+rate_limiting:
+  enabled: true
+  requests_per_minute: 60
+  burst_size: 10

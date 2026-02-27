@@ -1,0 +1,306 @@
+---
+# GitHub MCP Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: github-mcp
+  namespace: xom-mcp
+  labels:
+    app: github-mcp
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: github-mcp
+  template:
+    metadata:
+      labels:
+        app: github-mcp
+    spec:
+      containers:
+      - name: github-mcp
+        image: xom-mcp:github-latest
+        ports:
+        - containerPort: 8001
+          name: http
+        - containerPort: 9001
+          name: metrics
+        env:
+        - name: LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: mcp-config
+              key: LOG_LEVEL
+        - name: GITHUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: mcp-secrets
+              key: GITHUB_TOKEN
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8001
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8001
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+---
+# Slack MCP Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: slack-mcp
+  namespace: xom-mcp
+  labels:
+    app: slack-mcp
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: slack-mcp
+  template:
+    metadata:
+      labels:
+        app: slack-mcp
+    spec:
+      containers:
+      - name: slack-mcp
+        image: xom-mcp:slack-latest
+        ports:
+        - containerPort: 8002
+          name: http
+        - containerPort: 9002
+          name: metrics
+        env:
+        - name: LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: mcp-config
+              key: LOG_LEVEL
+        - name: SLACK_BOT_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: mcp-secrets
+              key: SLACK_BOT_TOKEN
+        - name: SLACK_SIGNING_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: mcp-secrets
+              key: SLACK_SIGNING_SECRET
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8002
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8002
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+---
+# Database MCP Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: database-mcp
+  namespace: xom-mcp
+  labels:
+    app: database-mcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: database-mcp
+  template:
+    metadata:
+      labels:
+        app: database-mcp
+    spec:
+      containers:
+      - name: database-mcp
+        image: xom-mcp:database-latest
+        ports:
+        - containerPort: 8003
+          name: http
+        - containerPort: 9003
+          name: metrics
+        env:
+        - name: LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: mcp-config
+              key: LOG_LEVEL
+        - name: DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: mcp-config
+              key: DB_HOST
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mcp-secrets
+              key: DB_PASSWORD
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8003
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8003
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+---
+# Xomware API MCP Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: xomware-api-mcp
+  namespace: xom-mcp
+  labels:
+    app: xomware-api-mcp
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: xomware-api-mcp
+  template:
+    metadata:
+      labels:
+        app: xomware-api-mcp
+    spec:
+      containers:
+      - name: xomware-api-mcp
+        image: xom-mcp:xomware-api-latest
+        ports:
+        - containerPort: 8004
+          name: http
+        - containerPort: 9004
+          name: metrics
+        env:
+        - name: LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: mcp-config
+              key: LOG_LEVEL
+        - name: XOMWARE_API_URL
+          valueFrom:
+            configMapKeyRef:
+              name: mcp-config
+              key: XOMWARE_API_URL
+        - name: XOMWARE_AUTH_HASH
+          valueFrom:
+            secretKeyRef:
+              name: mcp-secrets
+              key: XOMWARE_AUTH_HASH
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8004
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8004
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+---
+# PostgreSQL Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  namespace: xom-mcp
+  labels:
+    app: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:15-alpine
+        ports:
+        - containerPort: 5432
+          name: postgres
+        env:
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: POSTGRES_PASSWORD
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: POSTGRES_USER
+        - name: POSTGRES_DB
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: POSTGRES_DB
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+        livenessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - pg_isready -U xomware
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+      volumes:
+      - name: postgres-storage
+        persistentVolumeClaim:
+          claimName: postgres-pvc
