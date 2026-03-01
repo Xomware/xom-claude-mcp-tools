@@ -105,28 +105,61 @@ python tools/xomware-api-mcp/server.py
 ## MCP Servers
 
 ### GitHub MCP
-- PR review automation
-- Issue management and assignment
-- Code analysis and suggestions
-- Commit analysis
+- **PR review automation**: Automated code review suggestions using Claude
+- **Issue management**: Create, update, and close issues programmatically
+- **Code analysis**: Analyze code quality, suggest improvements
+- **Commit analysis**: Parse commits and generate summaries
+
+**Example**:
+```python
+# Review a pull request
+github_tool.review_pr(owner="xomware", repo="project", pr_number=123)
+```
 
 ### Slack MCP
-- Send messages to channels
-- Read threads and conversations
-- Manage notifications
-- User lookup and presence
+- **Send messages**: Post to channels with formatting
+- **Thread management**: Read and write in conversation threads
+- **User management**: Lookup users and check presence
+- **Notification management**: Schedule and manage notifications
+
+**Example**:
+```python
+# Send a message
+slack_tool.send_message(channel="#general", text="Hello Xomware!")
+
+# Thread reply
+slack_tool.reply_in_thread(channel="#general", timestamp="123.456", text="Reply text")
+```
 
 ### Database MCP
-- Execute queries
-- Update records
-- Run analytics
-- Connection pooling
+- **Query execution**: Run SELECT queries with connection pooling
+- **Data updates**: INSERT, UPDATE, DELETE operations
+- **Analytics**: Aggregate and summarize data
+- **Connection management**: Handle multiple database connections
+
+**Example**:
+```python
+# Execute a query
+db_tool.execute_query(sql="SELECT * FROM users WHERE active=true")
+
+# Update records
+db_tool.update_records(table="users", where={"id": 1}, data={"status": "active"})
+```
 
 ### Xomware API MCP
-- Board management
-- Status updates
-- Deployment tracking
-- Analytics and reporting
+- **Board management**: Create, update, and move board items
+- **Status updates**: Update deployment and project status
+- **Deployment tracking**: Monitor deployments and releases
+- **Analytics and reporting**: Generate reports and metrics
+
+**Example**:
+```python
+# Move board item
+xomware_tool.move_board_item(board_id=2, card_id=123, target_column="In Progress")
+
+# Update status
+xomware_tool.update_status(resource_id="pr-456", status="merged")
+```
 
 ## Project Structure
 
@@ -159,6 +192,35 @@ xom-claude-mcp-tools/
 - [Tool Development](./docs/tool-development.md) - Creating custom tools
 - [Security Guide](./docs/security-guide.md) - Authentication and encryption
 - [Deployment Guide](./docs/deployment.md) - Production deployment strategies
+
+## Contributing
+
+We welcome contributions! Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for:
+
+- Development setup instructions
+- How to add new MCP tools
+- Code style and testing requirements
+- Pull request process
+
+**Quick start**:
+```bash
+# Fork the repo, create a feature branch
+git checkout -b feature/your-tool
+
+# Set up development environment
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+
+# Create your tool following the guide in docs/tool-development.md
+# Write tests and update documentation
+
+# Commit and push
+git commit -m "feat: add new tool"
+git push origin feature/your-tool
+
+# Open a pull request
+```
 
 ## Development
 
