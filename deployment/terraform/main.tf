@@ -67,16 +67,17 @@ resource "aws_ecr_repository" "mcp_repos" {
 
 # RDS PostgreSQL Database
 resource "aws_db_instance" "postgres" {
-  allocated_storage    = var.db_storage
-  storage_type         = "gp3"
-  engine               = "postgres"
-  engine_version       = "15.3"
-  instance_class       = var.db_instance_class
-  db_name              = "xomware"
-  username             = "xomware"
-  password             = random_password.db_password.result
-  parameter_group_name = aws_db_parameter_group.postgres.name
-  skip_final_snapshot  = false
+  deletion_protection       = true
+  allocated_storage         = var.db_storage
+  storage_type              = "gp3"
+  engine                    = "postgres"
+  engine_version            = "15.3"
+  instance_class            = var.db_instance_class
+  db_name                   = "xomware"
+  username                  = "xomware"
+  password                  = random_password.db_password.result
+  parameter_group_name      = aws_db_parameter_group.postgres.name
+  skip_final_snapshot       = false
   final_snapshot_identifier = "xom-mcp-final-snapshot-${formatdate("YYYY-MM-DD-hhmm", timestamp())}"
 
   vpc_security_group_ids = [aws_security_group.rds.id]
@@ -263,8 +264,8 @@ resource "aws_secretsmanager_secret" "db_password" {
 }
 
 resource "aws_secretsmanager_secret_version" "db_password" {
-  secret_id      = aws_secretsmanager_secret.db_password.id
-  secret_string  = random_password.db_password.result
+  secret_id     = aws_secretsmanager_secret.db_password.id
+  secret_string = random_password.db_password.result
 }
 
 # Output values
